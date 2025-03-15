@@ -1,0 +1,99 @@
+.product-list {
+  color: #333;
+  font-family: Arial, sans-serif; // Ensuring a clean and modern font
+
+  .table {
+    padding: 5px;
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Subtle shadow for depth
+
+    .search {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 1.4rem;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+
+      thead {
+        border-top: 2px solid var(--light-blue);
+        border-bottom: 2px solid var(--light-blue);
+      }
+
+      th {
+        border: 1px solid #eee;
+      }
+
+      th,
+      td {
+        vertical-align: top;
+        text-align: left;
+        padding: 8px;
+
+        &.icons {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          > * {
+            margin-right: 7px;
+            cursor: pointer;
+            vertical-align: middle;
+            align-self: center;
+          }
+        }
+      }
+
+      tr {
+        border-bottom: 1px solid #ccc;
+      }
+
+      tr:nth-child(even) {
+        background-color: #fff;
+      }
+
+      .expiry-date {
+        font-weight: 500;
+
+        &.expired {
+          color: var(--color-danger);
+        }
+
+        &.expiring-soon {
+          color: #ff9800;
+        }
+
+        &.valid {
+          color: var(--color-success);
+        }
+
+        &.no-expiry {
+          color: #999;
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+.search {
+  .--form-control {
+    margin: 0;
+  }
+  input {
+    padding: 8px 10px;
+    border: 1px solid #777;
+    border-radius: 3px;
+    outline: none;
+    &:focus {
+      border: 1px solid var(--color-danger);
+    }
+  }
+}
