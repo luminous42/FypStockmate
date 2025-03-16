@@ -16,6 +16,15 @@
     &:hover {
       color: var(--color-primary);
     }
+
+    .sync-icon {
+      color: var(--color-primary);
+      animation: rotate 2s linear infinite;
+
+      &.error {
+        color: var(--color-danger);
+      }
+    }
   }
 
   .notification-badge {
@@ -30,6 +39,12 @@
     min-width: 20px;
     text-align: center;
     animation: pulse 1.5s infinite;
+
+    &.error-badge {
+      background: #ff3333;
+      font-weight: bold;
+      animation: pulse 1s infinite;
+    }
   }
 
   .notification-dropdown {
@@ -44,11 +59,35 @@
     z-index: 1000;
     animation: slideDown 0.3s ease;
 
-    h4 {
-      color: var(--color-dark);
+    .dropdown-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 1rem;
       padding-bottom: 0.5rem;
       border-bottom: 1px solid #eee;
+
+      h4 {
+        color: var(--color-dark);
+        margin: 0;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.6rem;
+        cursor: pointer;
+        color: var(--color-dark);
+        padding: 0.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: var(--color-danger);
+        }
+      }
     }
 
     .notification-item {
@@ -72,6 +111,44 @@
         &:last-child {
           color: var(--color-danger);
           font-size: 1.2rem;
+        }
+      }
+    }
+
+    &.error-dropdown {
+      p {
+        color: var(--color-danger);
+        font-size: 1.5rem;
+        margin: 1rem 0;
+      }
+
+      .retry-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        width: 100%;
+      }
+    }
+
+    &.empty-dropdown {
+      .empty-notification {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem 1rem;
+        text-align: center;
+
+        .info-icon {
+          font-size: 3rem;
+          color: var(--color-primary);
+          margin-bottom: 1rem;
+        }
+
+        p {
+          color: var(--color-dark);
+          font-size: 1.4rem;
         }
       }
     }
@@ -166,6 +243,17 @@
   border-top: 1px solid #eee;
   display: flex;
   justify-content: flex-end;
+  gap: 1rem;
+
+  .view-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .btn-icon {
+      font-size: 1.4rem;
+    }
+  }
 }
 
 // Add styles for the header actions container
@@ -218,5 +306,14 @@
   100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(255, 69, 0, 0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

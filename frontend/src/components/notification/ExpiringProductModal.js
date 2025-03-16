@@ -1,8 +1,13 @@
 import React from "react";
 import "./Notification.scss";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaList } from "react-icons/fa";
 
-const ExpiringProductModal = ({ product, onClose }) => {
+const ExpiringProductModal = ({
+  product,
+  onClose,
+  onViewAll,
+  formatExpiryDate,
+}) => {
   if (!product) return null;
 
   return (
@@ -28,7 +33,9 @@ const ExpiringProductModal = ({ product, onClose }) => {
             <h4>{product.name}</h4>
             <p className="expiry-date">
               <strong>Expires:</strong>{" "}
-              {new Date(product.expiryDate).toLocaleDateString()}
+              {formatExpiryDate
+                ? formatExpiryDate(product.expiryDate)
+                : new Date(product.expiryDate).toLocaleDateString()}
             </p>
             {product.quantity && (
               <p>
@@ -49,6 +56,14 @@ const ExpiringProductModal = ({ product, onClose }) => {
           </div>
         </div>
         <div className="modal-footer">
+          {onViewAll && (
+            <button
+              className="--btn --btn-primary view-all-btn"
+              onClick={onViewAll}
+            >
+              <FaList className="btn-icon" /> View All Expiring
+            </button>
+          )}
           <button
             className="--btn --btn-danger"
             onClick={onClose}
