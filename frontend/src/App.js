@@ -149,7 +149,9 @@ function App() {
           path="/transactions"
           element={
             <Sidebar>
-              <TransactionPage />
+              <Layout>
+                <TransactionPage />
+              </Layout>
             </Sidebar>
           }
         />
@@ -157,7 +159,9 @@ function App() {
           path="/add-transaction"
           element={
             <Sidebar>
-              <AddTransactionPage />
+              <Layout>
+                <AddTransactionPage />
+              </Layout>
             </Sidebar>
           }
         />
@@ -165,7 +169,9 @@ function App() {
           path="/transaction-detail/:id"
           element={
             <Sidebar>
-              <TransactionDetailPage />
+              <Layout>
+                <TransactionDetailPage />
+              </Layout>
             </Sidebar>
           }
         />

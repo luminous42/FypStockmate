@@ -1,22 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FaEye } from "react-icons/fa";
 import { getTransactions } from "../../redux/features/transaction/transactionSlice";
 import { SpinnerImg } from "../loader/Loader";
 import "./Transaction.scss";
-import DateRangePicker from "react-daterange-picker";
-import "react-daterange-picker/dist/css/react-calendar.css";
 import moment from "moment";
 
 const TransactionList = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { transactions, isLoading } = useSelector((state) => state.transaction);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
   const [dateRange, setDateRange] = useState({
     startDate: moment().subtract(30, "days").toDate(),
     endDate: moment().toDate(),
@@ -64,18 +61,13 @@ const TransactionList = () => {
     }
   }, [transactions, searchTerm, dateRange]);
 
-  // Handle date range selection
-  const handleDateRangeSelect = (range) => {
+  // Handle date range change
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
     setDateRange({
-      startDate: range.start.toDate(),
-      endDate: range.end.toDate(),
+      ...dateRange,
+      [name]: new Date(value),
     });
-    setIsDatePickerOpen(false);
-  };
-
-  // Navigate to add transaction page
-  const goToAddTransaction = () => {
-    navigate("/add-transaction");
   };
 
   // Format date
@@ -87,6 +79,11 @@ const TransactionList = () => {
   // Format currency
   const formatCurrency = (amount) => {
     return "$" + parseFloat(amount).toFixed(2);
+  };
+
+  // Format date for input field
+  const formatDateForInput = (date) => {
+    return moment(date).format("YYYY-MM-DD");
   };
 
   return (
@@ -105,30 +102,43 @@ const TransactionList = () => {
           <div className="date-filter">
             <button
               className="--btn --btn-secondary"
-              onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+              onClick={() => setIsDateFilterOpen(!isDateFilterOpen)}
             >
               {moment(dateRange.startDate).format("MMM D, YYYY")} -{" "}
               {moment(dateRange.endDate).format("MMM D, YYYY")}
             </button>
 
-            {isDatePickerOpen && (
-              <div className="date-picker-container">
-                <DateRangePicker
-                  value={{
-                    start: moment(dateRange.startDate),
-                    end: moment(dateRange.endDate),
-                  }}
-                  onSelect={handleDateRangeSelect}
-                  singleDateRange={true}
-                />
+            {isDateFilterOpen && (
+              <div className="date-inputs">
+                <div className="date-input-group">
+                  <label>From:</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={formatDateForInput(dateRange.startDate)}
+                    onChange={handleDateChange}
+                  />
+                </div>
+                <div className="date-input-group">
+                  <label>To:</label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={formatDateForInput(dateRange.endDate)}
+                    onChange={handleDateChange}
+                  />
+                </div>
               </div>
             )}
           </div>
         </div>
 
         <button
-          onClick={goToAddTransaction}
           className="--btn --btn-primary"
+          onClick={() => {
+            const baseUrl = window.location.origin;
+            window.location.href = `${baseUrl}/add-transaction`;
+          }}
         >
           New Sale
         </button>

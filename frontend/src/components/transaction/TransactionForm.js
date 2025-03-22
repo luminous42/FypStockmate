@@ -65,7 +65,11 @@ const TransactionForm = () => {
       setTransaction(initialState);
       setSelectedProducts([]);
       dispatch(RESET_TRANSACTION_STATE());
-      navigate("/transactions");
+
+      // Add a small delay before navigation to ensure state is updated
+      setTimeout(() => {
+        navigate("/transactions");
+      }, 100);
     }
   }, [isSuccess, dispatch, navigate]);
 

@@ -478,14 +478,35 @@
     .date-filter {
       position: relative;
 
-      .date-picker-container {
+      .date-inputs {
         position: absolute;
         top: 100%;
         right: 0;
-        z-index: 100;
-        background-color: var(--color-white);
+        z-index: 10;
+        background-color: white;
+        padding: 1rem;
         border-radius: 5px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-top: 0.5rem;
+        min-width: 300px;
+
+        .date-input-group {
+          display: flex;
+          align-items: center;
+          margin-bottom: 0.5rem;
+
+          label {
+            margin-right: 0.5rem;
+            min-width: 50px;
+          }
+
+          input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+          }
+        }
       }
     }
   }
@@ -641,6 +662,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      text-decoration: none;
 
       &:hover {
         background-color: var(--color-primary-dark);

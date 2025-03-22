@@ -4,8 +4,6 @@ import { getTransactionStats } from "../../redux/features/transaction/transactio
 import { SpinnerImg } from "../loader/Loader";
 import "./Transaction.scss";
 import { FaMoneyBillWave, FaShoppingCart, FaChartBar } from "react-icons/fa";
-import DateRangePicker from "react-daterange-picker";
-import "react-daterange-picker/dist/css/react-calendar.css";
 import moment from "moment";
 
 // Import Chart.js directly without react-chartjs-2
@@ -15,7 +13,7 @@ const TransactionStats = () => {
   const dispatch = useDispatch();
   const { stats, isLoading } = useSelector((state) => state.transaction);
 
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
   const [dateRange, setDateRange] = useState({
     startDate: moment().subtract(30, "days").toDate(),
     endDate: moment().toDate(),
@@ -148,18 +146,23 @@ const TransactionStats = () => {
     };
   }, [stats]);
 
-  // Handle date range selection
-  const handleDateRangeSelect = (range) => {
+  // Handle date change
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
     setDateRange({
-      startDate: range.start.toDate(),
-      endDate: range.end.toDate(),
+      ...dateRange,
+      [name]: new Date(value),
     });
-    setIsDatePickerOpen(false);
   };
 
   // Format currency
   const formatCurrency = (amount) => {
     return "$" + parseFloat(amount).toFixed(2);
+  };
+
+  // Format date for input field
+  const formatDateForInput = (date) => {
+    return moment(date).format("YYYY-MM-DD");
   };
 
   return (
@@ -170,22 +173,32 @@ const TransactionStats = () => {
         <div className="date-filter">
           <button
             className="--btn --btn-secondary"
-            onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+            onClick={() => setIsDateFilterOpen(!isDateFilterOpen)}
           >
             {moment(dateRange.startDate).format("MMM D, YYYY")} -{" "}
             {moment(dateRange.endDate).format("MMM D, YYYY")}
           </button>
 
-          {isDatePickerOpen && (
-            <div className="date-picker-container">
-              <DateRangePicker
-                value={{
-                  start: moment(dateRange.startDate),
-                  end: moment(dateRange.endDate),
-                }}
-                onSelect={handleDateRangeSelect}
-                singleDateRange={true}
-              />
+          {isDateFilterOpen && (
+            <div className="date-inputs">
+              <div className="date-input-group">
+                <label>From:</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formatDateForInput(dateRange.startDate)}
+                  onChange={handleDateChange}
+                />
+              </div>
+              <div className="date-input-group">
+                <label>To:</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formatDateForInput(dateRange.endDate)}
+                  onChange={handleDateChange}
+                />
+              </div>
             </div>
           )}
         </div>

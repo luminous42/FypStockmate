@@ -113,7 +113,6 @@ const transactionSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.transactions.push(action.payload);
-        toast.success("Transaction created successfully");
       })
       .addCase(createTransaction.rejected, (state, action) => {
         state.isLoading = false;
