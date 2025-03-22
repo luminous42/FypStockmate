@@ -20,6 +20,9 @@ import EditProduct from "./pages/editProduct/EditProduct";
 import Profile from "./pages/profile/Profile";
 import EditProfile from "./pages/profile/EditProfile";
 import Contact from "./pages/contact/Contact";
+import TransactionPage from "./pages/transaction/TransactionPage";
+import AddTransactionPage from "./pages/transaction/AddTransactionPage";
+import TransactionDetailPage from "./pages/transaction/TransactionDetailPage";
 
 axios.defaults.withCredentials = true;
 
@@ -139,6 +142,30 @@ function App() {
               <Layout>
                 <Contact />
               </Layout>
+            </Sidebar>
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <Sidebar>
+              <TransactionPage />
+            </Sidebar>
+          }
+        />
+        <Route
+          path="/add-transaction"
+          element={
+            <Sidebar>
+              <AddTransactionPage />
+            </Sidebar>
+          }
+        />
+        <Route
+          path="/transaction-detail/:id"
+          element={
+            <Sidebar>
+              <TransactionDetailPage />
             </Sidebar>
           }
         />
