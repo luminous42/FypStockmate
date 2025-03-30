@@ -8,6 +8,14 @@ import "./Profile.scss";
 import { toast } from "react-toastify";
 import { updateUser } from "../../services/authService";
 import ChangePassword from "../../components/changePassword/ChangePassword";
+import {
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiInfo,
+  FiImage,
+  FiSave,
+} from "react-icons/fi";
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -44,7 +52,6 @@ const EditProfile = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // Handle Image upload
       let imageURL;
       if (
         profileImage &&
@@ -64,83 +71,112 @@ const EditProfile = () => {
         );
         const imgData = await response.json();
         imageURL = imgData.url.toString();
-
-        // Save Profile
-        const formData = {
-          name: profile.name,
-          phone: profile.phone,
-          bio: profile.bio,
-          photo: profileImage ? imageURL : profile.photo,
-        };
-
-        const data = await updateUser(formData);
-        console.log(data);
-        toast.success("User updated");
-        navigate("/profile");
-        setIsLoading(false);
       }
+
+      // Save Profile
+      const formData = {
+        name: profile.name,
+        phone: profile.phone,
+        bio: profile.bio,
+        photo: profileImage ? imageURL : profile.photo,
+      };
+
+      const data = await updateUser(formData);
+      toast.success("Profile updated");
+      navigate("/profile");
+      setIsLoading(false);
     } catch (error) {
-      console.log(error);
       setIsLoading(false);
       toast.error(error.message);
     }
   };
 
   return (
-    <div className="profile --my2">
+    <div className="profile">
+      <div className="page-header">
+        <h3>
+          <FiUser /> Edit Profile
+        </h3>
+      </div>
+
       {isLoading && <Loader />}
 
-      <Card cardClass={"card --flex-dir-column"}>
-        <span className="profile-photo">
-          <img src={user?.photo} alt="profilepic" />
-        </span>
-        <form className="--form-control --m" onSubmit={saveProfile}>
-          <span className="profile-data">
-            <p>
-              <label>Name:</label>
+      <Card cardClass="card">
+        <div className="profile-photo">
+          <img
+            src={user?.photo}
+            alt="profile"
+          />
+        </div>
+        <div className="profile-data">
+          <form onSubmit={saveProfile}>
+            <div className="info-group">
+              <label>
+                <FiUser /> Name
+              </label>
               <input
                 type="text"
                 name="name"
                 value={profile?.name}
                 onChange={handleInputChange}
               />
-            </p>
-            <p>
-              <label>Email:</label>
-              <input type="text" name="email" value={profile?.email} disabled />
-              <br />
-              <code>Email cannot be changed.</code>
-            </p>
-            <p>
-              <label>Phone:</label>
+            </div>
+            <div className="info-group">
+              <label>
+                <FiMail /> Email
+              </label>
+              <input
+                type="text"
+                name="email"
+                value={profile?.email}
+                disabled
+              />
+              <small>Email cannot be changed.</small>
+            </div>
+            <div className="info-group">
+              <label>
+                <FiPhone /> Phone
+              </label>
               <input
                 type="text"
                 name="phone"
                 value={profile?.phone}
                 onChange={handleInputChange}
               />
-            </p>
-            <p>
-              <label>Bio:</label>
+            </div>
+            <div className="info-group">
+              <label>
+                <FiInfo /> Bio
+              </label>
               <textarea
                 name="bio"
                 value={profile?.bio}
                 onChange={handleInputChange}
-                cols="30"
-                rows="10"
+                rows="4"
               ></textarea>
-            </p>
-            <p>
-              <label>Photo:</label>
-              <input type="file" name="image" onChange={handleImageChange} />
-            </p>
-            <div>
-              <button className="--btn --btn-primary">Edit Profile</button>
             </div>
-          </span>
-        </form>
+            <div className="info-group">
+              <label>
+                <FiImage /> Profile Photo
+              </label>
+              <input
+                type="file"
+                name="image"
+                onChange={handleImageChange}
+              />
+            </div>
+            <div className="action-buttons">
+              <button
+                type="submit"
+                className="--btn --btn-primary"
+              >
+                <FiSave /> Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
       </Card>
-      <br />
+
       <ChangePassword />
     </div>
   );

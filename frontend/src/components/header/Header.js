@@ -7,7 +7,9 @@ import {
   selectIsLoggedIn,
 } from "../../redux/features/auth/authSlice";
 import { logoutUser } from "../../services/authService";
+import { FiBell, FiLogOut } from "react-icons/fi";
 import Notification from "../notification/Notification";
+import "./Header.scss";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -23,23 +25,27 @@ const Header = () => {
 
   return (
     <header className="header">
-      <div className="--pad header">
-        <div className="--flex-between">
+      <div className="header-content">
+        <div className="header-top">
           <h3>
-            <span className="--fw-thin">Welcome, </span>
-            <span className="--color-danger">{name}</span>
+            <span className="welcome-text">Welcome,</span>
+            <span className="user-name">{name}</span>
           </h3>
           <div className="header-actions">
-            {isLoggedIn && <Notification />}
+            {isLoggedIn && (
+              <div className="notification-btn-wrapper">
+                <Notification />
+              </div>
+            )}
             <button
               onClick={logout}
-              className="--btn --btn-danger"
+              className="logout-btn"
             >
+              <FiLogOut size={18} />
               Logout
             </button>
           </div>
         </div>
-        <hr />
       </div>
     </header>
   );

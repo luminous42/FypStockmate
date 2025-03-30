@@ -1,8 +1,17 @@
 import React from "react";
+import Loader from "../../loader/Loader";
+import {
+  FiPackage,
+  FiUpload,
+  FiDollarSign,
+  FiBox,
+  FiCalendar,
+  FiTag,
+  FiGrid,
+  FiFileText,
+} from "react-icons/fi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import Card from "../../card/Card";
-
 import "./ProductForm.scss";
 
 const ProductForm = ({
@@ -14,36 +23,30 @@ const ProductForm = ({
   handleInputChange,
   handleImageChange,
   saveProduct,
+  isEdit,
 }) => {
-  // Format date for input field
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return ""; // Return empty string if invalid date
-      return date.toISOString().split("T")[0];
-    } catch (error) {
-      console.error("Date formatting error:", error);
-      return "";
-    }
-  };
-
   return (
     <div className="add-product">
-      <Card cardClass={"card"}>
-        <form onSubmit={saveProduct}>
-          <Card cardClass={"group"}>
-            <label>Product Image</label>
-            <code className="--color-dark">
-              Supported Formats: jpg, jpeg, png
-            </code>
+      <div className="form-title">
+        <FiPackage size={28} />
+        <h2>{isEdit ? "Edit Product" : "Add New Product"}</h2>
+      </div>
+
+      <form onSubmit={saveProduct}>
+        <div className="form-left">
+          <div className="image-upload">
+            <label>
+              <FiUpload size={18} />
+              <div>Product Image</div>
+            </label>
+            <p className="formats">Supported formats: jpg, jpeg, png</p>
             <input
               type="file"
               name="image"
-              onChange={(e) => handleImageChange(e)}
+              onChange={handleImageChange}
+              accept="image/*"
             />
-
-            {imagePreview != null ? (
+            {imagePreview ? (
               <div className="image-preview">
                 <img
                   src={imagePreview}
@@ -51,115 +54,130 @@ const ProductForm = ({
                 />
               </div>
             ) : (
-              <p>No image set for this poduct.</p>
+              <div className="image-preview">
+                <p>No image selected</p>
+              </div>
             )}
-          </Card>
-          <label>Product Name:</label>
-          <input
-            type="text"
-            placeholder="Product name"
-            name="name"
-            value={product?.name}
-            onChange={handleInputChange}
-          />
+          </div>
+        </div>
 
-          <div className="--form-control">
-            <label>Expiry Date:</label>
+        <div className="form-right">
+          <div className="form-group">
+            <label>
+              <FiTag size={18} /> Product Name
+            </label>
+            <input
+              type="text"
+              placeholder="Enter product name"
+              name="name"
+              value={product?.name || ""}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              <FiGrid size={18} /> Category
+            </label>
+            <select
+              name="category"
+              value={product?.category || ""}
+              onChange={handleInputChange}
+              required
+            >
+              <option
+                value=""
+                disabled
+              >
+                Select a category
+              </option>
+              <option value="Electronics">Electronics</option>
+              <option value="Food">Food</option>
+              <option value="Fashion">Fashion</option>
+              <option value="Accessories">Accessories</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>
+              <FiDollarSign size={18} /> Price
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="Enter price"
+              name="price"
+              value={product?.price || ""}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              <FiBox size={18} /> Quantity
+            </label>
+            <input
+              type="number"
+              min="0"
+              placeholder="Enter quantity"
+              name="quantity"
+              value={product?.quantity || ""}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              <FiCalendar size={18} /> Expiry Date
+            </label>
             <input
               type="date"
               name="expiryDate"
-              value={formatDateForInput(product?.expiryDate)}
+              value={
+                product?.expiryDate
+                  ? new Date(product.expiryDate).toISOString().split("T")[0]
+                  : ""
+              }
               onChange={handleInputChange}
               min={new Date().toISOString().split("T")[0]}
               required
             />
           </div>
 
-          <label>Product Category:</label>
-          <input
-            type="text"
-            placeholder="Product Category"
-            name="category"
-            value={product?.category}
-            onChange={handleInputChange}
-          />
+          <div className="description-group">
+            <label>
+              <FiFileText size={18} /> Product Description
+            </label>
+            <ReactQuill
+              theme="snow"
+              value={description || ""}
+              onChange={setDescription}
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, false] }],
+                  ["bold", "italic", "underline"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["clean"],
+                ],
+              }}
+              placeholder="Enter product description..."
+            />
+          </div>
 
-          <label>Product Price:</label>
-          <input
-            type="text"
-            placeholder="Product Price"
-            name="price"
-            value={product?.price}
-            onChange={handleInputChange}
-          />
-
-          <label>Product Quantity:</label>
-          <input
-            type="text"
-            placeholder="Product Quantity"
-            name="quantity"
-            value={product?.quantity}
-            onChange={handleInputChange}
-          />
-
-          <label>Product Description:</label>
-          <ReactQuill
-            theme="snow"
-            value={description}
-            onChange={setDescription}
-            modules={ProductForm.modules}
-            formats={ProductForm.formats}
-          />
-
-          <div className="--my">
-            <button
-              type="submit"
-              className="--btn --btn-primary"
-            >
-              Save Product
+          <div className="submit-btn">
+            <button type="submit">
+              {isEdit ? "Update Product" : "Add Product"}
             </button>
           </div>
-        </form>
-      </Card>
+        </div>
+      </form>
     </div>
   );
 };
-
-ProductForm.modules = {
-  toolbar: [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
-    [{ size: [] }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [{ align: [] }],
-    [{ color: [] }, { background: [] }],
-    [
-      { list: "ordered" },
-      { list: "bullet" },
-      { indent: "-1" },
-      { indent: "+1" },
-    ],
-    ["clean"],
-  ],
-};
-ProductForm.formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "color",
-  "background",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "video",
-  "image",
-  "code-block",
-  "align",
-];
 
 export default ProductForm;

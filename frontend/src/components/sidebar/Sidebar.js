@@ -17,7 +17,10 @@ const Sidebar = ({ children }) => {
 
   return (
     <div className="layout">
-      <div className="sidebar" style={{ width: isOpen ? "230px" : "60px" }}>
+      <div
+        className="sidebar"
+        style={{ width: isOpen ? "230px" : "60px" }}
+      >
         <div className="top_section">
           {/* <div className="logo" style={{ display: isOpen ? "block" : "none" }}>
             <RiProductHuntLine
@@ -28,14 +31,26 @@ const Sidebar = ({ children }) => {
           </div> */}
 
           <div
-            className="bars"
-            style={{ marginLeft: isOpen ? "100px" : "0px" }}
+            className="menu-title"
+            style={{ width: isOpen ? "auto" : "0", opacity: isOpen ? 1 : 0 }}
           >
-            <HiMenuAlt3 onClick={toggle} />
+            <span>Stock Mate</span>
+          </div>
+          <div className="bars">
+            <HiMenuAlt3
+              size={24}
+              onClick={toggle}
+            />
           </div>
         </div>
         {menu.map((item, index) => {
-          return <SidebarItem key={index} item={item} isOpen={isOpen} />;
+          return (
+            <SidebarItem
+              key={index}
+              item={item}
+              isOpen={isOpen}
+            />
+          );
         })}
       </div>
 

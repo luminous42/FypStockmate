@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SpinnerImg } from "../../loader/Loader";
 import "./productList.scss";
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
-import { AiOutlineEye } from "react-icons/ai";
+import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 import Search from "../../search/Search";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -22,7 +21,6 @@ import { formatDistanceToNow } from "date-fns";
 const ProductList = ({ products, isLoading, handleDelete }) => {
   const [search, setSearch] = useState("");
   const filteredProducts = useSelector(selectFilteredPoducts);
-
   const dispatch = useDispatch();
 
   const shortenText = (text, n) => {
@@ -34,7 +32,6 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
   };
 
   const delProduct = async (id) => {
-    console.log(id);
     await dispatch(deleteProduct(id));
     await dispatch(getProducts());
   };
@@ -42,7 +39,7 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
   const confirmDelete = (id) => {
     confirmAlert({
       title: "Delete Product",
-      message: "Are you sure you want to delete this product.",
+      message: "Are you sure you want to delete this product?",
       buttons: [
         {
           label: "Delete",
@@ -50,7 +47,6 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
         },
         {
           label: "Cancel",
-          // onClick: () => alert('Click No')
         },
       ],
     });
@@ -60,11 +56,10 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
   const [currentItems, setCurrentItems] = useState([]);
   const [pageCount, setPageCount] = useState(0);
   const [itemOffset, setItemOffset] = useState(0);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const endOffset = itemOffset + itemsPerPage;
-
     setCurrentItems(filteredProducts.slice(itemOffset, endOffset));
     setPageCount(Math.ceil(filteredProducts.length / itemsPerPage));
   }, [itemOffset, itemsPerPage, filteredProducts]);
@@ -120,40 +115,38 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
 
   return (
     <div className="product-list">
-      <hr />
       <div className="table">
         <div className="--flex-between --flex-dir-column">
-          <span>
-            <h3>Inventory Items</h3>
-          </span>
-          <span>
+          <h3>Inventory Items</h3>
+          <div className="search">
             <Search
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-          </span>
+          </div>
         </div>
 
         {isLoading && <SpinnerImg />}
 
         <div className="table">
           {!isLoading && products.length === 0 ? (
-            <p>-- No product found, please add a product...</p>
+            <p className="--text-center --py2">
+              No products found. Please add a product.
+            </p>
           ) : (
             <table>
               <thead>
                 <tr>
-                  <th>s/n</th>
+                  <th>S/N</th>
                   <th>Name</th>
                   <th>Category</th>
                   <th>Price</th>
                   <th>Quantity</th>
                   <th>Value</th>
                   <th>Expiry Date</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-
               <tbody>
                 {currentItems.map((product, index) => {
                   const { _id, name, category, price, quantity, expiryDate } =
@@ -161,7 +154,7 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
                   const expiryStatus = getExpiryStatus(expiryDate);
                   return (
                     <tr key={_id}>
-                      <td>{index + 1}</td>
+                      <td>{itemOffset + index + 1}</td>
                       <td>{shortenText(name, 16)}</td>
                       <td>{category}</td>
                       <td>
@@ -176,30 +169,25 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
                       <td className={`expiry-date ${expiryStatus.className}`}>
                         {expiryStatus.status}
                       </td>
-                      <td className="icons">
-                        <span>
-                          <Link to={`/product-detail/${_id}`}>
-                            <AiOutlineEye
-                              size={25}
-                              color={"purple"}
-                            />
-                          </Link>
-                        </span>
-                        <span>
-                          <Link to={`/edit-product/${_id}`}>
-                            <FaEdit
-                              size={20}
-                              color={"green"}
-                            />
-                          </Link>
-                        </span>
-                        <span>
-                          <FaTrashAlt
-                            size={20}
-                            color={"red"}
+                      <td>
+                        <div className="actions">
+                          <button className="view">
+                            <Link to={`/product-detail/${_id}`}>
+                              <FiEye size={20} />
+                            </Link>
+                          </button>
+                          <button className="edit">
+                            <Link to={`/edit-product/${_id}`}>
+                              <FiEdit2 size={20} />
+                            </Link>
+                          </button>
+                          <button
+                            className="delete"
                             onClick={() => confirmDelete(_id)}
-                          />
-                        </span>
+                          >
+                            <FiTrash2 size={20} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

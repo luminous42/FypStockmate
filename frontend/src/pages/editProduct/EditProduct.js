@@ -10,6 +10,8 @@ import {
   selectProduct,
   updateProduct,
 } from "../../redux/features/product/productSlice";
+import { FiEdit2 } from "react-icons/fi";
+import "./EditProduct.scss";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -19,25 +21,31 @@ const EditProduct = () => {
 
   const productEdit = useSelector(selectProduct);
 
-  const [product, setProduct] = useState(productEdit);
+  const [product, setProduct] = useState(null);
   const [productImage, setProductImage] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [description, setDescription] = useState("");
 
+  // Fetch product when component mounts
   useEffect(() => {
     dispatch(getProduct(id));
   }, [dispatch, id]);
 
+  // Update local state when product data is fetched
   useEffect(() => {
-    setProduct(productEdit);
+    if (productEdit) {
+      setProduct({
+        name: productEdit.name || "",
+        category: productEdit.category || "",
+        quantity: productEdit.quantity || "",
+        price: productEdit.price || "",
+        expiryDate: productEdit.expiryDate || "",
+      });
 
-    setImagePreview(
-      productEdit && productEdit.image ? `${productEdit.image.filePath}` : null
-    );
+      setImagePreview(productEdit.image ? productEdit.image.filePath : null);
 
-    setDescription(
-      productEdit && productEdit.description ? productEdit.description : ""
-    );
+      setDescription(productEdit.description || "");
+    }
   }, [productEdit]);
 
   const handleInputChange = (e) => {
@@ -46,21 +54,28 @@ const EditProduct = () => {
   };
 
   const handleImageChange = (e) => {
-    setProductImage(e.target.files[0]);
-    setImagePreview(URL.createObjectURL(e.target.files[0]));
+    const file = e.target.files[0];
+    if (file) {
+      setProductImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const saveProduct = async (e) => {
     e.preventDefault();
+
+    // Validation
+    if (!product) return;
+
     const formData = new FormData();
 
-    formData.append("name", product?.name);
-    formData.append("category", product?.category);
-    formData.append("quantity", product?.quantity);
-    formData.append("price", product?.price);
+    formData.append("name", product.name);
+    formData.append("category", product.category);
+    formData.append("quantity", product.quantity);
+    formData.append("price", product.price);
     formData.append("description", description);
 
-    if (product?.expiryDate) {
+    if (product.expiryDate) {
       const formattedDate = new Date(product.expiryDate).toISOString();
       formData.append("expiryDate", formattedDate);
     }
@@ -69,6 +84,7 @@ const EditProduct = () => {
       formData.append("image", productImage);
     }
 
+    console.log("Updating product with data:");
     for (let [key, value] of formData.entries()) {
       console.log(`${key}: ${value}`);
     }
@@ -79,19 +95,28 @@ const EditProduct = () => {
   };
 
   return (
-    <div>
+    <div className="edit-product-page">
       {isLoading && <Loader />}
-      <h3 className="--mt">Edit Product</h3>
-      <ProductForm
-        product={product}
-        productImage={productImage}
-        imagePreview={imagePreview}
-        description={description}
-        setDescription={setDescription}
-        handleInputChange={handleInputChange}
-        handleImageChange={handleImageChange}
-        saveProduct={saveProduct}
-      />
+
+      <div className="page-header">
+        <h3>
+          <FiEdit2 /> Edit Product
+        </h3>
+      </div>
+
+      {product && (
+        <ProductForm
+          product={product}
+          productImage={productImage}
+          imagePreview={imagePreview}
+          description={description}
+          setDescription={setDescription}
+          handleInputChange={handleInputChange}
+          handleImageChange={handleImageChange}
+          saveProduct={saveProduct}
+          isEdit={true}
+        />
+      )}
     </div>
   );
 };
