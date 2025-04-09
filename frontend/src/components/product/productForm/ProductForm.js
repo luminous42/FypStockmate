@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Loader from "../../loader/Loader";
 import {
   FiPackage,
@@ -13,6 +13,7 @@ import {
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./ProductForm.scss";
+import { getProducts } from "../../../services/productService";
 
 const ProductForm = ({
   product,
@@ -25,12 +26,37 @@ const ProductForm = ({
   saveProduct,
   isEdit,
 }) => {
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch available categories from products
+  const fetchCategories = async () => {
+    setIsLoading(true);
+    try {
+      const products = await getProducts();
+      const uniqueCategories = [
+        ...new Set(products.map((product) => product.category).filter(Boolean)),
+      ];
+      setCategories(uniqueCategories);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   return (
     <div className="add-product">
       <div className="form-title">
         <FiPackage size={28} />
         <h2>{isEdit ? "Edit Product" : "Add New Product"}</h2>
       </div>
+
+      {isLoading && <Loader />}
 
       <form onSubmit={saveProduct}>
         <div className="form-left">
@@ -92,11 +118,28 @@ const ProductForm = ({
               >
                 Select a category
               </option>
-              <option value="Electronics">Electronics</option>
-              <option value="Food">Food</option>
-              <option value="Fashion">Fashion</option>
-              <option value="Accessories">Accessories</option>
-              <option value="Others">Others</option>
+              {categories.length > 0 ? (
+                categories.map((category, index) => (
+                  <option
+                    key={index}
+                    value={category}
+                  >
+                    {category}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Food">Food</option>
+                  <option value="Fashion">Fashion</option>
+                  <option value="Accessories">Accessories</option>
+                  <option value="Others">Others</option>
+                </>
+              )}
+              {/* Always include "Others" category if not already in the list */}
+              {categories.length > 0 && !categories.includes("Others") && (
+                <option value="Others">Others</option>
+              )}
             </select>
           </div>
 

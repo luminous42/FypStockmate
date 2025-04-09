@@ -115,11 +115,11 @@ const ProductDetail = () => {
 
               <div className="product-timestamps">
                 <div className="timestamp">
-                  Created on:{" "}
+                  <strong>Created on:</strong>{" "}
                   {new Date(product.createdAt).toLocaleString("en-US")}
                 </div>
                 <div className="timestamp">
-                  Last Updated:{" "}
+                  <strong>Last Updated:</strong>{" "}
                   {new Date(product.updatedAt).toLocaleString("en-US")}
                 </div>
               </div>
@@ -132,10 +132,12 @@ const ProductDetail = () => {
                   {product.createdBy && (
                     <div className="history-item">
                       <h5>Created By</h5>
-                      <p>User: {product.createdBy.name}</p>
                       <p>
-                        Date:{" "}
-                        {new Date(product.createdBy.date).toLocaleString()}
+                        <strong>User:</strong> {product.createdBy.name}
+                      </p>
+                      <p>
+                        <strong>Date:</strong>{" "}
+                        {new Date(product.createdAt).toLocaleString("en-US")}
                       </p>
                     </div>
                   )}
@@ -146,8 +148,13 @@ const ProductDetail = () => {
                       <ul>
                         {product.editedBy.map((edit, index) => (
                           <li key={index}>
-                            <p>Editor: {edit.name}</p>
-                            <p>Date: {new Date(edit.date).toLocaleString()}</p>
+                            <p>
+                              <strong>User:</strong> {edit.name}
+                            </p>
+                            <p>
+                              <strong>Date:</strong>{" "}
+                              {new Date(edit.date).toLocaleString("en-US")}
+                            </p>
                           </li>
                         ))}
                       </ul>
@@ -157,10 +164,14 @@ const ProductDetail = () => {
                   {product.isDeleted && product.deletedBy && (
                     <div className="history-item">
                       <h5>Deleted By</h5>
-                      <p>User: {product.deletedBy.name}</p>
                       <p>
-                        Date:{" "}
-                        {new Date(product.deletedBy.date).toLocaleString()}
+                        <strong>User:</strong> {product.deletedBy.name}
+                      </p>
+                      <p>
+                        <strong>Date:</strong>{" "}
+                        {new Date(product.deletedBy.date).toLocaleString(
+                          "en-US"
+                        )}
                       </p>
                     </div>
                   )}
