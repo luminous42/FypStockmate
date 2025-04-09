@@ -137,6 +137,18 @@ const TransactionDetail = () => {
                 {transaction.paymentStatus}
               </span>
             </p>
+
+            <p>
+              <strong>Performed By:</strong>{" "}
+              <span className="performed-by">
+                {transaction.createdBy
+                  ? transaction.createdBy.role === "admin"
+                    ? "Admin"
+                    : transaction.createdBy.name
+                  : "User not found"}
+              </span>
+            </p>
+
             {transaction.notes && (
               <div className="notes">
                 <h4>Notes</h4>

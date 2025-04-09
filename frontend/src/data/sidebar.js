@@ -3,10 +3,11 @@ import {
   FaRegChartBar,
   FaCommentAlt,
   FaMoneyBillWave,
+  FaUserCog,
 } from "react-icons/fa";
 import { BiImageAdd } from "react-icons/bi";
 
-const menu = [
+const menuItems = [
   {
     title: "Dashboard",
     icon: <FaTh />,
@@ -37,10 +38,21 @@ const menu = [
     ],
   },
   {
+    title: "Admin",
+    icon: <FaUserCog />,
+    childrens: [
+      {
+        title: "User Management",
+        path: "/admin/users",
+      },
+    ],
+    adminOnly: true,
+  },
+  {
     title: "Report Bug",
     icon: <FaCommentAlt />,
     path: "/contact-us",
   },
 ];
 
-export default menu;
+export default menuItems;

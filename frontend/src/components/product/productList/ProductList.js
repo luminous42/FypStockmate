@@ -122,6 +122,7 @@ const ProductList = ({ products, isLoading, handleDelete }) => {
             <Search
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products"
             />
           </div>
         </div>

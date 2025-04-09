@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaPlus } from "react-icons/fa";
+import { FiCalendar } from "react-icons/fi";
 import { getTransactions } from "../../redux/features/transaction/transactionSlice";
 import { SpinnerImg } from "../loader/Loader";
 import "./Transaction.scss";
@@ -34,27 +35,34 @@ const TransactionList = () => {
           transactionDate >= dateRange.startDate &&
           transactionDate <= dateRange.endDate;
 
-        // Filter by search term
+        // Filter by search term (with null checks)
         const matchesSearch =
-          transaction.customer.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          transaction.paymentMethod
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          transaction.paymentStatus
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          (transaction.customer.email &&
+          searchTerm === "" ||
+          (transaction.customer &&
+            transaction.customer.name &&
+            transaction.customer.name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (transaction.paymentMethod &&
+            transaction.paymentMethod
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (transaction.paymentStatus &&
+            transaction.paymentStatus
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (transaction.customer &&
+            transaction.customer.email &&
             transaction.customer.email
               .toLowerCase()
               .includes(searchTerm.toLowerCase())) ||
-          (transaction.customer.phone &&
+          (transaction.customer &&
+            transaction.customer.phone &&
             transaction.customer.phone
               .toLowerCase()
               .includes(searchTerm.toLowerCase()));
 
-        return isInDateRange && (searchTerm === "" || matchesSearch);
+        return isInDateRange && matchesSearch;
       });
 
       setFilteredTransactions(filtered);
@@ -86,6 +94,20 @@ const TransactionList = () => {
     return moment(date).format("YYYY-MM-DD");
   };
 
+  // Close date filter when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDateFilterOpen && !event.target.closest(".date-filter")) {
+        setIsDateFilterOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDateFilterOpen]);
+
   return (
     <div className="transaction-list">
       <h3>Sales Transactions</h3>
@@ -94,16 +116,13 @@ const TransactionList = () => {
         <div className="search-filter">
           <input
             type="text"
-            placeholder="Search by customer, payment method, etc."
+            placeholder="Search by customer, payment method, or status..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
 
           <div className="date-filter">
-            <button
-              className="--btn --btn-secondary"
-              onClick={() => setIsDateFilterOpen(!isDateFilterOpen)}
-            >
+            <button onClick={() => setIsDateFilterOpen(!isDateFilterOpen)}>
               {moment(dateRange.startDate).format("MMM D, YYYY")} -{" "}
               {moment(dateRange.endDate).format("MMM D, YYYY")}
             </button>
@@ -134,13 +153,13 @@ const TransactionList = () => {
         </div>
 
         <button
-          className="--btn --btn-primary"
+          className="--btn--btn-primary"
           onClick={() => {
             const baseUrl = window.location.origin;
             window.location.href = `${baseUrl}/add-transaction`;
           }}
         >
-          New Sale
+          <FaPlus size={14} /> New Sale
         </button>
       </div>
 
@@ -149,7 +168,10 @@ const TransactionList = () => {
       ) : (
         <div className="transaction-table">
           {filteredTransactions.length === 0 ? (
-            <p>No transactions found.</p>
+            <p className="no-data">
+              No transactions found. Try adjusting your filters or add a new
+              sale.
+            </p>
           ) : (
             <table>
               <thead>
@@ -167,13 +189,23 @@ const TransactionList = () => {
                 {filteredTransactions.map((transaction) => (
                   <tr key={transaction._id}>
                     <td>{formatDate(transaction.transactionDate)}</td>
-                    <td>{transaction.customer.name}</td>
-                    <td>{transaction.products.length}</td>
+                    <td>
+                      {transaction.customer && transaction.customer.name
+                        ? transaction.customer.name
+                        : "N/A"}
+                    </td>
+                    <td>
+                      {transaction.products ? transaction.products.length : 0}
+                    </td>
                     <td>{formatCurrency(transaction.totalAmount)}</td>
                     <td>{transaction.paymentMethod}</td>
                     <td>
                       <span
-                        className={`status ${transaction.paymentStatus.toLowerCase()}`}
+                        className={`status ${
+                          transaction.paymentStatus
+                            ? transaction.paymentStatus.toLowerCase()
+                            : ""
+                        }`}
                       >
                         {transaction.paymentStatus}
                       </span>

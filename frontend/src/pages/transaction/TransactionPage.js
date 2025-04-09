@@ -1,12 +1,24 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectIsAdmin } from "../../redux/features/auth/authSlice";
 import TransactionList from "../../components/transaction/TransactionList";
 import TransactionStats from "../../components/transaction/TransactionStats";
 import { FaPlus } from "react-icons/fa";
 import "../../components/transaction/Transaction.scss";
+import { toast } from "react-toastify";
 
 const TransactionPage = () => {
   const [activeTab, setActiveTab] = useState("list");
+  const isAdmin = useSelector(selectIsAdmin);
+
+  const handleStatsClick = () => {
+    if (isAdmin) {
+      setActiveTab("stats");
+    } else {
+      toast.error("Only admin users can access statistics");
+    }
+  };
 
   return (
     <div className="transaction-page">
@@ -19,9 +31,10 @@ const TransactionPage = () => {
         </button>
         <button
           className={`tab ${activeTab === "stats" ? "active" : ""}`}
-          onClick={() => setActiveTab("stats")}
+          onClick={handleStatsClick}
         >
-          Statistics
+          Statistics{" "}
+          {!isAdmin && <span className="admin-only">(Admin Only)</span>}
         </button>
         <button
           className="add-button"
@@ -35,7 +48,11 @@ const TransactionPage = () => {
       </div>
 
       <div className="tab-content">
-        {activeTab === "list" ? <TransactionList /> : <TransactionStats />}
+        {activeTab === "list" ? (
+          <TransactionList />
+        ) : (
+          isAdmin && <TransactionStats />
+        )}
       </div>
     </div>
   );

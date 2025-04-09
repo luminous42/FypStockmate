@@ -67,6 +67,10 @@ const createProduct = asyncHandler(async (req, res) => {
     description,
     expiryDate,
     image: fileData,
+    createdBy: {
+      user: req.user.id,
+      name: req.user.name,
+    },
   });
 
   res.status(201).json(product);
@@ -74,23 +78,49 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Get all Products
 const getProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({ user: req.user.id }).sort("-createdAt");
+  let filter = { isDeleted: { $ne: true } }; // Don't show deleted products
+
+  // If admin, can see all products
+  if (req.user.role === "admin") {
+    // No additional filter
+  } else {
+    // For non-admin, only show products they have access to
+    if (req.user.categories && req.user.categories.length > 0) {
+      filter.category = { $in: req.user.categories };
+    } else {
+      // If user has no categories, return empty array
+      return res.status(200).json([]);
+    }
+  }
+
+  const products = await Product.find(filter).sort("-createdAt");
   res.status(200).json(products);
 });
 
 // Get single product
 const getProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findOne({
+    _id: req.params.id,
+    isDeleted: { $ne: true },
+  });
+
   // if product doesnt exist
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
-  // Match product to its user
-  if (product.user.toString() !== req.user.id) {
-    res.status(401);
-    throw new Error("User not authorized");
+
+  // Check if user has access to this product's category
+  if (req.user.role !== "admin") {
+    if (
+      !req.user.categories ||
+      !req.user.categories.includes(product.category)
+    ) {
+      res.status(403);
+      throw new Error("You don't have permission to view this product");
+    }
   }
+
   res.status(200).json(product);
 });
 
@@ -102,12 +132,28 @@ const deleteProduct = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Product not found");
   }
-  // Match product to its user
-  if (product.user.toString() !== req.user.id) {
-    res.status(401);
-    throw new Error("User not authorized");
+
+  // Check authorization based on user role and category
+  if (req.user.role !== "admin") {
+    // For non-admin users, check if they have access to this category
+    if (
+      !req.user.categories ||
+      !req.user.categories.includes(product.category)
+    ) {
+      res.status(403);
+      throw new Error("You don't have permission to delete this product");
+    }
   }
-  await product.remove();
+
+  // Soft delete the product
+  product.isDeleted = true;
+  product.deletedBy = {
+    user: req.user.id,
+    name: req.user.name,
+    date: new Date(),
+  };
+
+  await product.save();
   res.status(200).json({ message: "Product deleted." });
 });
 
@@ -124,10 +170,26 @@ const updateProduct = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 
-  // Match product to its user
-  if (product.user.toString() !== req.user.id) {
-    res.status(401);
-    throw new Error("User not authorized");
+  // Check authorization based on user role and category
+  if (req.user.role !== "admin") {
+    // For non-admin users, check if they have access to this category
+    if (
+      !req.user.categories ||
+      !req.user.categories.includes(product.category)
+    ) {
+      res.status(403);
+      throw new Error("You don't have permission to update this product");
+    }
+
+    // Additionally, check if they have access to the new category if it's being changed
+    if (
+      category &&
+      category !== product.category &&
+      (!req.user.categories || !req.user.categories.includes(category))
+    ) {
+      res.status(403);
+      throw new Error("You don't have permission to change to this category");
+    }
   }
 
   // Handle Image upload
@@ -153,6 +215,13 @@ const updateProduct = asyncHandler(async (req, res) => {
     };
   }
 
+  // Add edit information
+  const editInfo = {
+    user: req.user.id,
+    name: req.user.name,
+    date: new Date(),
+  };
+
   // Create update object
   const updateData = {
     name,
@@ -161,6 +230,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     price,
     description,
     image: Object.keys(fileData).length === 0 ? product?.image : fileData,
+    $push: { editedBy: editInfo },
   };
 
   // Only update expiryDate if it's provided

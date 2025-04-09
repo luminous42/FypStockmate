@@ -3,7 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, Link } from "react-router-dom";
 import { FiBox, FiInfo, FiArrowLeft } from "react-icons/fi";
 import useRedirectLoggedOutUser from "../../../customHook/useRedirectLoggedOutUser";
-import { selectIsLoggedIn } from "../../../redux/features/auth/authSlice";
+import {
+  selectIsLoggedIn,
+  selectIsAdmin,
+} from "../../../redux/features/auth/authSlice";
 import { getProduct } from "../../../redux/features/product/productSlice";
 import Card from "../../card/Card";
 import { SpinnerImg } from "../../loader/Loader";
@@ -18,6 +21,7 @@ const ProductDetail = () => {
   const { id } = useParams();
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
+  const isAdmin = useSelector(selectIsAdmin);
   const { product, isLoading, isError, message } = useSelector(
     (state) => state.product
   );
@@ -119,6 +123,49 @@ const ProductDetail = () => {
                   {new Date(product.updatedAt).toLocaleString("en-US")}
                 </div>
               </div>
+
+              {/* Admin-only information */}
+              {isAdmin && (
+                <div className="admin-info">
+                  <h4>Product History</h4>
+
+                  {product.createdBy && (
+                    <div className="history-item">
+                      <h5>Created By</h5>
+                      <p>User: {product.createdBy.name}</p>
+                      <p>
+                        Date:{" "}
+                        {new Date(product.createdBy.date).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+
+                  {product.editedBy && product.editedBy.length > 0 && (
+                    <div className="history-item">
+                      <h5>Edit History</h5>
+                      <ul>
+                        {product.editedBy.map((edit, index) => (
+                          <li key={index}>
+                            <p>Editor: {edit.name}</p>
+                            <p>Date: {new Date(edit.date).toLocaleString()}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {product.isDeleted && product.deletedBy && (
+                    <div className="history-item">
+                      <h5>Deleted By</h5>
+                      <p>User: {product.deletedBy.name}</p>
+                      <p>
+                        Date:{" "}
+                        {new Date(product.deletedBy.date).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="action-buttons">
                 <Link
