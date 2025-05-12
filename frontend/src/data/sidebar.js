@@ -4,6 +4,7 @@ import {
   FaCommentAlt,
   FaMoneyBillWave,
   FaUserCog,
+  FaTags,
 } from "react-icons/fa";
 import { BiImageAdd } from "react-icons/bi";
 
@@ -44,6 +45,10 @@ const menuItems = [
       {
         title: "User Management",
         path: "/admin/users",
+      },
+      {
+        title: "Category Management",
+        path: "/admin/categories",
       },
     ],
     adminOnly: true,

@@ -13,7 +13,7 @@ import {
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./ProductForm.scss";
-import { getProducts } from "../../../services/productService";
+import categoryService from "../../../services/categoryService";
 
 const ProductForm = ({
   product,
@@ -29,18 +29,15 @@ const ProductForm = ({
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch available categories from products
+  // Fetch categories
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const products = await getProducts();
-      const uniqueCategories = [
-        ...new Set(products.map((product) => product.category).filter(Boolean)),
-      ];
-      setCategories(uniqueCategories);
+      const data = await categoryService.getCategories();
+      setCategories(data);
       setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching categories:", error);
       setIsLoading(false);
     }
   };
@@ -118,28 +115,14 @@ const ProductForm = ({
               >
                 Select a category
               </option>
-              {categories.length > 0 ? (
-                categories.map((category, index) => (
-                  <option
-                    key={index}
-                    value={category}
-                  >
-                    {category}
-                  </option>
-                ))
-              ) : (
-                <>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Food">Food</option>
-                  <option value="Fashion">Fashion</option>
-                  <option value="Accessories">Accessories</option>
-                  <option value="Others">Others</option>
-                </>
-              )}
-              {/* Always include "Others" category if not already in the list */}
-              {categories.length > 0 && !categories.includes("Others") && (
-                <option value="Others">Others</option>
-              )}
+              {categories.map((category) => (
+                <option
+                  key={category._id}
+                  value={category._id}
+                >
+                  {category.name}
+                </option>
+              ))}
             </select>
           </div>
 

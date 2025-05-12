@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Product = require("../models/productModel");
+const Category = require("../models/categoryModel");
 
 const path = require("path");
 console.log(
@@ -33,19 +34,29 @@ const createProduct = asyncHandler(async (req, res) => {
     throw new Error("Please fill in all fields including expiry date");
   }
 
+  // Check if category exists
+  const categoryExists = await Category.findById(category);
+  if (!categoryExists) {
+    res.status(400);
+    throw new Error("Category not found");
+  }
+
   // Handle Image upload
   let fileData = {};
   if (req.file) {
     // Save image to cloudinary
     let uploadedFile;
     try {
+      console.log("Attempting to upload file to Cloudinary:", req.file.path);
       uploadedFile = await cloudinary.uploader.upload(req.file.path, {
-        folder: "Pinvent App",
+        folder: "stockmate",
         resource_type: "image",
       });
+      console.log("Cloudinary upload successful:", uploadedFile.secure_url);
     } catch (error) {
+      console.error("Cloudinary upload error:", error);
       res.status(500);
-      throw new Error("Image could not be uploaded");
+      throw new Error("Image could not be uploaded: " + error.message);
     }
 
     fileData = {
@@ -93,7 +104,9 @@ const getProducts = asyncHandler(async (req, res) => {
     }
   }
 
-  const products = await Product.find(filter).sort("-createdAt");
+  const products = await Product.find(filter)
+    .populate("category", "name description")
+    .sort("-createdAt");
   res.status(200).json(products);
 });
 
@@ -102,7 +115,7 @@ const getProduct = asyncHandler(async (req, res) => {
   const product = await Product.findOne({
     _id: req.params.id,
     isDeleted: { $ne: true },
-  });
+  }).populate("category", "name description");
 
   // if product doesnt exist
   if (!product) {
@@ -114,7 +127,7 @@ const getProduct = asyncHandler(async (req, res) => {
   if (req.user.role !== "admin") {
     if (
       !req.user.categories ||
-      !req.user.categories.includes(product.category)
+      !req.user.categories.includes(product.category._id.toString())
     ) {
       res.status(403);
       throw new Error("You don't have permission to view this product");
@@ -198,13 +211,24 @@ const updateProduct = asyncHandler(async (req, res) => {
     // Save image to cloudinary
     let uploadedFile;
     try {
+      console.log(
+        "Attempting to upload file to Cloudinary for update:",
+        req.file.path
+      );
       uploadedFile = await cloudinary.uploader.upload(req.file.path, {
-        folder: "Pinvent App",
+        folder: "stockmate",
         resource_type: "image",
       });
+      console.log(
+        "Cloudinary upload successful for update:",
+        uploadedFile.secure_url
+      );
     } catch (error) {
+      console.error("Cloudinary upload error during update:", error);
       res.status(500);
-      throw new Error("Image could not be uploaded");
+      throw new Error(
+        "Image could not be uploaded during update: " + error.message
+      );
     }
 
     fileData = {

@@ -78,26 +78,40 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // Login user
 const loginUser = asyncHandler(async (req, res) => {
+  console.log("Login attempt:", { email: req.body.email });
+
   const { email, password } = req.body;
 
   // Validation
   if (!email || !password) {
+    console.log("Missing fields:", { email: !!email, password: !!password });
     res.status(400);
     throw new Error("Please fill all the fields");
   }
 
   // Check if user exists
   const user = await User.findOne({ email });
+  console.log("User found:", !!user);
+
   if (!user) {
-    res.status(400);
-    throw new Error("Invalid credentials");
+    console.log("User not found for email:", email);
+    res.status(401);
+    throw new Error("Invalid email or password");
   }
 
   // Check if password matches
   const passwordIsCorrect = await bcrypt.compare(password, user.password);
+  console.log("Password check:", { passwordIsCorrect });
+
+  if (!passwordIsCorrect) {
+    console.log("Invalid password for user:", email);
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
 
   // Generate token
   const token = generateToken(user._id);
+  console.log("Token generated successfully");
 
   // Send http-only cookie
   res.cookie("token", token, {
@@ -107,24 +121,31 @@ const loginUser = asyncHandler(async (req, res) => {
     sameSite: "none",
     secure: true,
   });
+  console.log("Cookie set successfully");
 
-  if (user && passwordIsCorrect) {
-    const { _id, name, email, phone, photo, bio, role, categories } = user;
-    res.status(200).json({
-      _id,
-      name,
-      email,
-      phone,
-      photo,
-      bio,
-      role,
-      categories,
-      token,
-    });
-  } else {
-    res.status(400);
-    throw new Error("Invalid email or password");
-  }
+  const {
+    _id,
+    name,
+    email: userEmail,
+    phone,
+    photo,
+    bio,
+    role,
+    categories,
+  } = user;
+  console.log("Login successful for user:", { name, email: userEmail, role });
+
+  res.status(200).json({
+    _id,
+    name,
+    email: userEmail,
+    phone,
+    photo,
+    bio,
+    role,
+    categories,
+    token,
+  });
 });
 
 // Logout user
