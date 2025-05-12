@@ -36,14 +36,15 @@ const EditProduct = () => {
     if (productEdit) {
       setProduct({
         name: productEdit.name || "",
-        category: productEdit.category || "",
+        category: productEdit.category?._id || productEdit.category || "",
         quantity: productEdit.quantity || "",
         price: productEdit.price || "",
-        expiryDate: productEdit.expiryDate || "",
+        expiryDate: productEdit.expiryDate
+          ? new Date(productEdit.expiryDate).toISOString().split("T")[0]
+          : "",
       });
 
       setImagePreview(productEdit.image ? productEdit.image.filePath : null);
-
       setDescription(productEdit.description || "");
     }
   }, [productEdit]);
@@ -75,9 +76,11 @@ const EditProduct = () => {
     formData.append("price", product.price);
     formData.append("description", description);
 
+    // Handle expiry date
     if (product.expiryDate) {
-      const formattedDate = new Date(product.expiryDate).toISOString();
-      formData.append("expiryDate", formattedDate);
+      formData.append("expiryDate", product.expiryDate);
+    } else {
+      formData.append("expiryDate", "");
     }
 
     if (productImage) {
@@ -89,9 +92,13 @@ const EditProduct = () => {
       console.log(`${key}: ${value}`);
     }
 
-    await dispatch(updateProduct({ id, formData }));
-    await dispatch(getProducts());
-    navigate("/dashboard");
+    try {
+      await dispatch(updateProduct({ id, formData }));
+      await dispatch(getProducts());
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
   };
 
   return (

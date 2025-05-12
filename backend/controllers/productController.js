@@ -175,6 +175,16 @@ const updateProduct = asyncHandler(async (req, res) => {
   const { name, category, quantity, price, description, expiryDate } = req.body;
   const { id } = req.params;
 
+  console.log("Update request received:", {
+    id,
+    name,
+    category,
+    quantity,
+    price,
+    description,
+    expiryDate,
+  });
+
   const product = await Product.findById(id);
 
   // if product doesnt exist
@@ -248,30 +258,36 @@ const updateProduct = asyncHandler(async (req, res) => {
 
   // Create update object
   const updateData = {
-    name,
-    category,
-    quantity,
-    price,
-    description,
+    name: name || product.name,
+    category: category || product.category,
+    quantity: quantity || product.quantity,
+    price: price || product.price,
+    description: description || product.description,
     image: Object.keys(fileData).length === 0 ? product?.image : fileData,
     $push: { editedBy: editInfo },
   };
 
-  // Only update expiryDate if it's provided
+  // Handle expiry date
   if (expiryDate) {
     updateData.expiryDate = new Date(expiryDate);
+  } else if (expiryDate === "") {
+    updateData.expiryDate = null;
   }
 
-  // Update Product
-  const updatedProduct = await Product.findByIdAndUpdate(
-    { _id: id },
-    updateData,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  console.log("Updating product with data:", updateData);
 
+  // Update Product
+  const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+    new: true,
+    runValidators: true,
+  }).populate("category", "name description");
+
+  if (!updatedProduct) {
+    res.status(400);
+    throw new Error("Product update failed");
+  }
+
+  console.log("Product updated successfully:", updatedProduct);
   res.status(200).json(updatedProduct);
 });
 
