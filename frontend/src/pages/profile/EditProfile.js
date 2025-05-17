@@ -38,6 +38,7 @@ const EditProfile = () => {
   };
   const [profile, setProfile] = useState(initialState);
   const [profileImage, setProfileImage] = useState("");
+  const [imagePreview, setImagePreview] = useState(user?.photo);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -45,49 +46,80 @@ const EditProfile = () => {
   };
 
   const handleImageChange = (e) => {
-    setProfileImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+        toast.error("Please select a valid image file (jpg, jpeg, or png)");
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+      setProfileImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const saveProfile = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      let imageURL;
-      if (
-        profileImage &&
-        (profileImage.type === "image/jpeg" ||
-          profileImage.type === "image/jpg" ||
-          profileImage.type === "image/png")
-      ) {
-        const image = new FormData();
-        image.append("file", profileImage);
-        image.append("cloud_name", "zinotrust");
-        image.append("upload_preset", "wk66xdkq");
+      let imageURL = profile.photo; // Default to existing photo
 
-        // First save image to cloudinary
-        const response = await fetch(
-          "https://api.cloudinary.com/v1_1/zinotrust/image/upload",
-          { method: "post", body: image }
-        );
-        const imgData = await response.json();
-        imageURL = imgData.url.toString();
+      // If a new image is selected, upload it to the backend first
+      if (profileImage) {
+        console.log("Uploading image to backend...");
+        const formData = new FormData();
+        formData.append("image", profileImage);
+
+        // Get backend URL from environment variables
+        const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        if (!backendUrl) {
+          console.error("Backend URL environment variable not set!");
+          toast.error("Backend URL is not configured.");
+          setIsLoading(false);
+          return;
+        }
+
+        // Call backend endpoint to upload image
+        const response = await fetch(`${backendUrl}/api/upload-image`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Backend Image Upload Error:", errorData);
+          throw new Error(
+            errorData.message || "Failed to upload image to backend."
+          );
+        }
+
+        const responseData = await response.json();
+        imageURL = responseData.imageURL; // Backend should return the Cloudinary URL
+        console.log("Backend upload successful, received URL:", imageURL);
       }
 
-      // Save Profile
+      // Save Profile data with the potentially new image URL
       const formData = {
         name: profile.name,
         phone: profile.phone,
         bio: profile.bio,
-        photo: profileImage ? imageURL : profile.photo,
+        photo: imageURL,
       };
 
+      console.log("Updating user profile with data:", formData);
       const data = await updateUser(formData);
-      toast.success("Profile updated");
+      toast.success("Profile updated successfully");
       navigate("/profile");
-      setIsLoading(false);
     } catch (error) {
+      console.error("Save Profile Error:", error);
+      toast.error(error.message || "Failed to update profile");
+    } finally {
       setIsLoading(false);
-      toast.error(error.message);
     }
   };
 
@@ -104,7 +136,7 @@ const EditProfile = () => {
       <Card cardClass="card">
         <div className="profile-photo">
           <img
-            src={user?.photo}
+            src={imagePreview || "https://via.placeholder.com/150"}
             alt="profile"
           />
         </div>
@@ -119,6 +151,7 @@ const EditProfile = () => {
                 name="name"
                 value={profile?.name}
                 onChange={handleInputChange}
+                required
               />
             </div>
             <div className="info-group">
@@ -163,14 +196,17 @@ const EditProfile = () => {
                 type="file"
                 name="image"
                 onChange={handleImageChange}
+                accept="image/jpeg,image/jpg,image/png"
               />
+              <small>Supported formats: jpg, jpeg, png (max 5MB)</small>
             </div>
             <div className="action-buttons">
               <button
                 type="submit"
                 className="--btn --btn-primary"
+                disabled={isLoading}
               >
-                <FiSave /> Save Changes
+                <FiSave /> {isLoading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>

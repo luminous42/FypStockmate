@@ -25,20 +25,6 @@ const menuItems = [
     path: "/transactions",
   },
   {
-    title: "Account",
-    icon: <FaRegChartBar />,
-    childrens: [
-      {
-        title: "Profile",
-        path: "/profile",
-      },
-      {
-        title: "Edit Profile",
-        path: "/edit-profile",
-      },
-    ],
-  },
-  {
     title: "Admin",
     icon: <FaUserCog />,
     childrens: [

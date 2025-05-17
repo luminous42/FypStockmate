@@ -18,10 +18,14 @@ const cloudinary = require("cloudinary").v2;
 
 // Create Prouct
 const createProduct = asyncHandler(async (req, res) => {
+  console.log("=== Starting Product Creation ===");
+  console.log("Request body:", req.body);
+  console.log("Request file:", req.file);
+
   const { name, sku, category, quantity, price, description, expiryDate } =
     req.body;
 
-  //   Validation
+  // Validation
   if (
     !name ||
     !category ||
@@ -30,6 +34,7 @@ const createProduct = asyncHandler(async (req, res) => {
     !description ||
     !expiryDate
   ) {
+    console.log("Validation failed - missing required fields");
     res.status(400);
     throw new Error("Please fill in all fields including expiry date");
   }
@@ -37,6 +42,7 @@ const createProduct = asyncHandler(async (req, res) => {
   // Check if category exists
   const categoryExists = await Category.findById(category);
   if (!categoryExists) {
+    console.log("Category not found:", category);
     res.status(400);
     throw new Error("Category not found");
   }
@@ -44,17 +50,38 @@ const createProduct = asyncHandler(async (req, res) => {
   // Handle Image upload
   let fileData = {};
   if (req.file) {
+    console.log("Processing image upload...");
+    console.log("File details:", {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      path: req.file.path,
+    });
+
     // Save image to cloudinary
     let uploadedFile;
     try {
-      console.log("Attempting to upload file to Cloudinary:", req.file.path);
+      console.log("Attempting to upload to Cloudinary...");
+      console.log("Cloudinary config:", {
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY ? "exists" : "missing",
+        api_secret: process.env.CLOUDINARY_API_SECRET ? "exists" : "missing",
+      });
+
       uploadedFile = await cloudinary.uploader.upload(req.file.path, {
         folder: "stockmate",
         resource_type: "image",
       });
-      console.log("Cloudinary upload successful:", uploadedFile.secure_url);
+
+      console.log("Cloudinary upload successful:", {
+        url: uploadedFile.secure_url,
+        public_id: uploadedFile.public_id,
+      });
     } catch (error) {
-      console.error("Cloudinary upload error:", error);
+      console.error("Cloudinary upload error:", {
+        message: error.message,
+        error: error,
+      });
       res.status(500);
       throw new Error("Image could not be uploaded: " + error.message);
     }
@@ -65,26 +92,34 @@ const createProduct = asyncHandler(async (req, res) => {
       fileType: req.file.mimetype,
       fileSize: fileSizeFormatter(req.file.size, 2),
     };
+    console.log("File data prepared:", fileData);
   }
 
   // Create Product
-  const product = await Product.create({
-    user: req.user.id,
-    name,
-    sku,
-    category,
-    quantity,
-    price,
-    description,
-    expiryDate,
-    image: fileData,
-    createdBy: {
+  try {
+    console.log("Creating product in database...");
+    const product = await Product.create({
       user: req.user.id,
-      name: req.user.name,
-    },
-  });
-
-  res.status(201).json(product);
+      name,
+      sku,
+      category,
+      quantity,
+      price,
+      description,
+      expiryDate,
+      image: fileData,
+      createdBy: {
+        user: req.user.id,
+        name: req.user.name,
+      },
+    });
+    console.log("Product created successfully:", product._id);
+    res.status(201).json(product);
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500);
+    throw new Error("Error creating product: " + error.message);
+  }
 });
 
 // Get all Products
