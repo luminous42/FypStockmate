@@ -171,7 +171,6 @@ const ProductForm = ({
               }
               onChange={handleInputChange}
               min={new Date().toISOString().split("T")[0]}
-              required
             />
           </div>
 

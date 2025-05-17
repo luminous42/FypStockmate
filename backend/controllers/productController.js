@@ -26,17 +26,12 @@ const createProduct = asyncHandler(async (req, res) => {
     req.body;
 
   // Validation
-  if (
-    !name ||
-    !category ||
-    !quantity ||
-    !price ||
-    !description ||
-    !expiryDate
-  ) {
+  if (!name || !category || !quantity || !price || !description) {
     console.log("Validation failed - missing required fields");
     res.status(400);
-    throw new Error("Please fill in all fields including expiry date");
+    throw new Error(
+      "Please fill in all required fields (expiry date is optional)"
+    );
   }
 
   // Check if category exists

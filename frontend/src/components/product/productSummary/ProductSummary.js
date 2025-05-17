@@ -37,6 +37,9 @@ const ProductSummary = ({ products }) => {
     (product) => product.quantity === "0"
   );
 
+  // Log out-of-stock products to check if the array is populated
+  console.log("Out of stock products:", outOfStockProducts);
+
   return (
     <div className="product-summary">
       <div className="header">
